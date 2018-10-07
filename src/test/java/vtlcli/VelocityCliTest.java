@@ -15,11 +15,15 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.Collections;
 
 public class VelocityCliTest {
@@ -38,6 +42,9 @@ public class VelocityCliTest {
         System.setOut(new PrintStream(capturedOut));
         System.setErr(new PrintStream(capturedErr));
     }
+
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
 
     private String getCapturedOut() {
         return capturedOut.toString();
@@ -86,9 +93,28 @@ public class VelocityCliTest {
         cli.run();
         assertEquals("Hello, world!\n", getCapturedOut());
     }
-    
+
+    @Test
+    public void testOutputFile() throws IOException {
+        VelocityCli cli = new VelocityCli();
+        cli.inputTemplate = new File(System.getProperty("user.dir"), "templates/hello.vtl");
+        cli.context = Collections.singletonMap("name", "world");
+        cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
+        cli.run();
+        assertEquals("Hello, world!\n", new String(Files.readAllBytes(cli.outputFile.toPath())));
+    }
+
+    @Test
+    public void testInvalidOutputFile() throws IOException {
+        VelocityCli cli = new VelocityCli();
+        cli.inputTemplate = new File(System.getProperty("user.dir"), "templates/hello.vtl");
+        cli.outputFile = new File("/1:\\invalid");
+        cli.run();
+        assertTrue(getCapturedErr().contains("Error opening output file"));
+    }
+
     @After
-    public void tearDown() {        
+    public void tearDown() {
         System.setOut(out);
         System.setErr(err);
         System.out.print(getCapturedErr());
