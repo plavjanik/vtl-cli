@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.hierynomus.license' version '0.14.0'
+}
+
+mainClassName = 'vtlcli.VelocityCli'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.apache.velocity:velocity-engine-core:2.0'
+    compile 'info.picocli:picocli:3.6.1'
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'org.slf4j:slf4j-simple:1.7.25'
+
+    testCompile 'junit:junit:4.12'
+}
+
+license { 
+    header = file('LICENSE_HEADER') 
+    excludes(["**/*.yml"])
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }    
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': mainClassName,
+                'Implementation-Version': project.version
+    }
+    from {
+        configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+    destinationDir = new File(project.buildDir, 'libs')
+    archiveName = 'vtl-cli.jar'
+}
+
+build.dependsOn fatJar
