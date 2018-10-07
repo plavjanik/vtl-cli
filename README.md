@@ -14,7 +14,7 @@ This is simple Java command-line application that uses Apache Velocity to 'merge
 ## Usage
 
 ```
-java -jar builds/libs/vtl-cli.jar templates/hello.vtl -c name=world
+java -jar build/libs/vtl-cli.jar templates/hello.vtl -c name=world
 ```
 
 If the `hello.vtl` file contains:

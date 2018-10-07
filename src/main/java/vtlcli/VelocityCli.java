@@ -70,8 +70,6 @@ public class VelocityCli implements Runnable {
             logger.error("Error loading template '{}': {}", inputTemplate.getPath(), e.getMessage());
         } catch (ParseErrorException e) {
             logger.error("Error parsing template: {}", e.getMessage());
-        } catch (MethodInvocationException e) {
-            logger.error("Error processing template: {}", e.getMessage());
         }
 
         try {
