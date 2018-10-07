@@ -39,3 +39,8 @@ gradle-app.setting
 .classpath
 .project
 .settings/
+
+# OS
+.DS_Store
+
+test.out

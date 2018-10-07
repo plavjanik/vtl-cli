@@ -24,3 +24,14 @@ If the `hello.vtl` file contains:
 Then the standard output of `vtl-cli` is:
 
     Hello, world!
+
+## Syntax
+
+```
+Apache Velocity Template Language CLI
+Usage: vtl [-o=<outputFile>] [-c=<String=String>]... FILE
+      FILE                 File with a Velocity template to process
+  -c, --context=<String=String>
+                           Context variable for Velocity (can be repeated)
+  -o, --out=<outputFile>   Output file (default: print to console)
+```

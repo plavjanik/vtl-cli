@@ -13,7 +13,6 @@ package vtlcli;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
@@ -21,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -32,15 +32,18 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "vtl", header = "%n@|green Velocity CLI|@")
+@Command(name = "vtl", header = "%n@|green Apache Velocity Template Language CLI|@")
 public class VelocityCli implements Runnable {
-    @Parameters(paramLabel = "FILE", description = "Velocity template to process.")
+    Logger logger = LoggerFactory.getLogger(VelocityCli.class);
+
+    @Parameters(paramLabel = "FILE", description = "File with a Velocity template to process")
     File inputTemplate;
 
-    @Option(names = { "-c", "--context" })
+    @Option(names = { "-c", "--context" }, description = "Context variable for Velocity (can be repeated)")
     Map<String, String> context;
 
-    Logger logger = LoggerFactory.getLogger(VelocityCli.class);
+    @Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
+    File outputFile;
 
     public static void main(String[] args) {
         CommandLine.run(new VelocityCli(), args);
@@ -53,29 +56,41 @@ public class VelocityCli implements Runnable {
             engine.setProperty("file.resource.loader.path", inputTemplate.getParent());
         }
         engine.init();
-        VelocityContext velocityContext = new VelocityContext();
 
+        VelocityContext velocityContext = new VelocityContext();
         if (context != null) {
             for (Entry<String, String> entry : context.entrySet()) {
                 velocityContext.put(entry.getKey(), entry.getValue());
             }
         }
 
-        Writer writer = new BufferedWriter(new OutputStreamWriter(System.out));
-
-        try {
-            Template template = engine.getTemplate(inputTemplate.getName());
-            template.merge(velocityContext, writer);
-        } catch (ResourceNotFoundException e) {
-            logger.error("Error loading template '{}': {}", inputTemplate.getPath(), e.getMessage());
-        } catch (ParseErrorException e) {
-            logger.error("Error parsing template: {}", e.getMessage());
+        Writer writer = getWriter();
+        if (writer != null) {
+            try {
+                Template template = engine.getTemplate(inputTemplate.getName());
+                template.merge(velocityContext, writer);
+                writer.flush();
+            } catch (ResourceNotFoundException e) {
+                logger.error("Error loading template: {}", e.getMessage());
+            } catch (ParseErrorException e) {
+                logger.error("Error parsing template: {}", e.getMessage());
+            } catch (IOException e) {
+                logger.error("I/O error: {}", e.getMessage());
+            }
         }
+    }
 
-        try {
-            writer.flush();
-        } catch (IOException e) {
-            logger.error("Error writing to the output", e);
+    private Writer getWriter() {
+        if (outputFile != null) {
+            try {
+                return new BufferedWriter(new FileWriter(outputFile));
+            } catch (IOException e) {
+                logger.error("Error opening output file: {}'", e.getMessage());
+                return null;
+            }
+        }
+        else {
+            return new BufferedWriter(new OutputStreamWriter(System.out));
         }
     }
 }
