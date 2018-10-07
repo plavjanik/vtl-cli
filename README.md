@@ -1,5 +1,7 @@
 # Velocity Template Language (VTL) Command-line Interface
 
+[![Build Status](https://travis-ci.com/plavjanik/vtl-cli.svg?branch=master)](https://travis-ci.com/plavjanik/vtl-cli)
+
 This is simple Java command-line application that uses Apache Velocity to 'merge' VTL templates from console.
 
 ## Build
