@@ -23,11 +23,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -36,30 +39,31 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "vtl", 
-         header = "%n@|green Apache Velocity Template Language CLI|@",
-         sortOptions = false,
-         headerHeading = "Usage:%n%n",
-         synopsisHeading = "%n",         
-         parameterListHeading = "%nParameters:%n",
-         optionListHeading = "%nOptions:%n")
+@Command(name = "vtl", header = "%n@|green Apache Velocity Template Language CLI|@", sortOptions = false, headerHeading = "Usage:%n%n", synopsisHeading = "%n", parameterListHeading = "%nParameters:%n", optionListHeading = "%nOptions:%n")
 public class VelocityCli implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(VelocityCli.class);
 
     @Parameters(paramLabel = "FILE", description = "File with a Velocity template to process")
     File inputTemplate;
 
-    @Option(names = { "-c", "--context" }, description = "Context variable for Velocity (can be repeated)", paramLabel="variable=value")
+    @Option(names = { "-i", "--input-encoding" }, description = "UTF8, ISO8859-1, Cp1047, ... - see https://goo.gl/yn2pJZ")
+    String inputEncoding;
+
+    @Option(names = { "-c",
+            "--context" }, description = "Context variable for Velocity (can be repeated)", paramLabel = "variable=value")
     Map<String, String> context;
 
     @Option(names = { "-y", "--yaml-context" }, description = "YAML file with context variables")
     File yamlContextFile;
 
-    @Option(names = { "-e", "--env-context"}, description = "Set the context variables from environment")
-    boolean envContext;    
+    @Option(names = { "-e", "--env-context" }, description = "Set the context variables from environment")
+    boolean envContext;
 
     @Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
     File outputFile;
+
+    @Option(names = { "-n", "--output-encoding" }, description = "UTF8, ISO8859-1, Cp1047, ...")
+    String outputEncoding;
 
     public static void main(String[] args) {
         System.setProperty("picocli.usage.width", "120");
@@ -84,15 +88,20 @@ public class VelocityCli implements Runnable {
         loadYamlContext(velocityContext);
         loadOptionContext(velocityContext);
 
-        Writer writer = getWriter();
         try {
-            Template template = engine.getTemplate(inputTemplate.getName());
+            Writer writer = getWriter();
+            if (inputEncoding != null) {
+                Charset.forName(inputEncoding);
+            }
+            Template template = engine.getTemplate(inputTemplate.getName(), inputEncoding);
             template.merge(velocityContext, writer);
             writer.flush();
         } catch (ResourceNotFoundException e) {
             throw new VelocityCliError("Error loading template", e);
         } catch (ParseErrorException e) {
             throw new VelocityCliError("Error parsing template", e);
+        } catch (java.nio.charset.UnsupportedCharsetException e) {
+            throw new VelocityCliError("Unsupported encoding", e);
         } catch (IOException e) {
             throw new VelocityCliError("I/O error", e);
         }
@@ -131,14 +140,22 @@ public class VelocityCli implements Runnable {
     }
 
     private Writer getWriter() {
-        if (outputFile != null) {
-            try {
-                return new BufferedWriter(new FileWriter(outputFile));
-            } catch (IOException e) {
-                throw new VelocityCliError("Error opening output file", e);
+        try {
+            OutputStream outputStream;
+            if (outputFile != null) {
+                outputStream = new FileOutputStream(outputFile);
+            } else {
+                outputStream = System.out;
             }
-        } else {
-            return new BufferedWriter(new OutputStreamWriter(System.out));
+            if (outputEncoding == null) {
+                return new BufferedWriter(new OutputStreamWriter(outputStream));
+            } else {
+                return new BufferedWriter(new OutputStreamWriter(outputStream, outputEncoding));
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new VelocityCliError("Unsupported encoding", e);
+        } catch (IOException e) {
+            throw new VelocityCliError("Error opening output file", e);
         }
     }
 }
