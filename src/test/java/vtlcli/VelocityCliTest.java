@@ -11,7 +11,6 @@
 package vtlcli;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,17 +29,11 @@ public class VelocityCliTest {
     private PrintStream out;
     private ByteArrayOutputStream capturedOut;
 
-    private PrintStream err;
-    private ByteArrayOutputStream capturedErr;
-
     @Before
     public void setUp() {
         out = System.out;
-        err = System.err;
         capturedOut = new ByteArrayOutputStream();
-        capturedErr = new ByteArrayOutputStream();
         System.setOut(new PrintStream(capturedOut));
-        System.setErr(new PrintStream(capturedErr));
     }
 
     @Rule
@@ -50,8 +43,8 @@ public class VelocityCliTest {
         return capturedOut.toString();
     }
 
-    private String getCapturedErr() {
-        return capturedErr.toString();
+    private File file(String filename) {
+        return new File(System.getProperty("user.dir"), filename);
     }
 
     @Test
@@ -59,36 +52,34 @@ public class VelocityCliTest {
         VelocityCli.main(new String[] {});
     }
 
-    @Test
+    @Test(expected = VelocityCliError.class)
     public void testMissingTemplate() {
         VelocityCli cli = new VelocityCli();
         cli.inputTemplate = new File("missing.vtl");
         cli.run();
         assertEquals("", getCapturedOut());
-        assertTrue(getCapturedErr().contains("Error loading template"));
     }
 
     @Test
     public void testNoContext() {
         VelocityCli cli = new VelocityCli();
-        cli.inputTemplate = new File(System.getProperty("user.dir"), "templates/hello.vtl");
+        cli.inputTemplate = file("templates/hello.vtl");
         cli.run();
         assertEquals("Hello, ${name}!\n", getCapturedOut());
     }
 
-    @Test
+    @Test(expected = VelocityCliError.class)
     public void testParsingError() {
         VelocityCli cli = new VelocityCli();
-        cli.inputTemplate = new File(System.getProperty("user.dir"), "templates/parsing_error.vtl");
+        cli.inputTemplate = file("templates/parsing_error.vtl");
         cli.run();
         assertEquals("", getCapturedOut());
-        assertTrue(getCapturedErr().contains("Error parsing template"));
     }
 
     @Test
     public void testContext() {
         VelocityCli cli = new VelocityCli();
-        cli.inputTemplate = new File(System.getProperty("user.dir"), "templates/hello.vtl");
+        cli.inputTemplate = file("templates/hello.vtl");
         cli.context = Collections.singletonMap("name", "world");
         cli.run();
         assertEquals("Hello, world!\n", getCapturedOut());
@@ -97,27 +88,43 @@ public class VelocityCliTest {
     @Test
     public void testOutputFile() throws IOException {
         VelocityCli cli = new VelocityCli();
-        cli.inputTemplate = new File(System.getProperty("user.dir"), "templates/hello.vtl");
+        cli.inputTemplate = file("templates/hello.vtl");
         cli.context = Collections.singletonMap("name", "world");
         cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
         cli.run();
         assertEquals("Hello, world!\n", new String(Files.readAllBytes(cli.outputFile.toPath())));
     }
 
-    @Test
+    @Test(expected = VelocityCliError.class)
     public void testInvalidOutputFile() throws IOException {
         VelocityCli cli = new VelocityCli();
-        cli.inputTemplate = new File(System.getProperty("user.dir"), "templates/hello.vtl");
+        cli.inputTemplate = file("templates/hello.vtl");
         cli.outputFile = new File("/1:\\invalid");
         cli.run();
-        assertTrue(getCapturedErr().contains("Error opening output file"));
+    }
+
+    @Test
+    public void testYamlContext() {
+        VelocityCli cli = new VelocityCli();
+        cli.inputTemplate = file("templates/hello.vtl");
+        cli.yamlContextFile = file("templates/hello.yml");
+
+        cli.run();
+        assertEquals("Hello, world!\n", getCapturedOut());
+    }
+
+    @Test(expected = VelocityCliError.class)
+    public void testInvalidYamlContext() {
+        VelocityCli cli = new VelocityCli();
+        cli.inputTemplate = file("templates/hello.vtl");
+        cli.yamlContextFile = file("templates/missing.yml");
+
+        cli.run();
     }
 
     @After
     public void tearDown() {
         System.setOut(out);
-        System.setErr(err);
-        System.out.print(getCapturedErr());
-        System.err.print(getCapturedErr());
+        System.out.print(getCapturedOut());
     }
 }
