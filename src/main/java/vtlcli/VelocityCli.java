@@ -52,8 +52,11 @@ public class VelocityCli implements Runnable {
     @Option(names = { "-c", "--context" }, description = "Context variable for Velocity (can be repeated)", paramLabel="variable=value")
     Map<String, String> context;
 
-    @Option(names = { "-yc", "--yaml-context" }, description = "YAML file with context variables")
+    @Option(names = { "-y", "--yaml-context" }, description = "YAML file with context variables")
     File yamlContextFile;
+
+    @Option(names = { "-e", "--env-context"}, description = "Set the context variables from environment")
+    boolean envContext;    
 
     @Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
     File outputFile;
@@ -77,8 +80,9 @@ public class VelocityCli implements Runnable {
         engine.init();
 
         VelocityContext velocityContext = new VelocityContext();
-        loadOptionContext(velocityContext);
+        loadEnvContext(velocityContext);
         loadYamlContext(velocityContext);
+        loadOptionContext(velocityContext);
 
         Writer writer = getWriter();
         try {
@@ -91,6 +95,14 @@ public class VelocityCli implements Runnable {
             throw new VelocityCliError("Error parsing template", e);
         } catch (IOException e) {
             throw new VelocityCliError("I/O error", e);
+        }
+    }
+
+    private void loadEnvContext(VelocityContext velocityContext) {
+        if (envContext) {
+            for (Entry<String, String> entry : System.getenv().entrySet()) {
+                velocityContext.put(entry.getKey(), entry.getValue());
+            }
         }
     }
 

@@ -28,7 +28,7 @@ Then the standard output of `vtl-cli` is:
 ## Syntax
 
 ```
-vtl [-o=<outputFile>] [-yc=YAML file with context] [-c=variable=value]... FILE
+vtl [-e] [-o=<outputFile>] [-y=<yamlContextFile>] [-c=variable=value]... FILE
 
 Parameters:
       FILE                 File with a Velocity template to process
@@ -36,8 +36,9 @@ Parameters:
 Options:
   -c, --context=variable=value
                            Context variable for Velocity (can be repeated)
-  -yc, --yaml-context=<yamlContextFile>
+  -y, --yaml-context=<yamlContextFile>
                            YAML file with context variables
+  -e, --env-context        Set the context variables from environment
   -o, --out=<outputFile>   Output file (default: print to console)
 ```
 

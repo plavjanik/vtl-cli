@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class VelocityCliTest {
     private PrintStream out;
@@ -121,6 +123,20 @@ public class VelocityCliTest {
 
         cli.run();
     }
+
+    @Test
+    public void testEnvironmentContext() throws Exception {
+        VelocityCli cli = new VelocityCli();
+        Map<String, String> env = System.getenv();
+        Map<String, String> newEnv = new HashMap<>(env);
+        newEnv.put("VTL_NAME", "environment");
+        EnvUtils.setenv(newEnv);
+        cli.inputTemplate = file("templates/env.vtl");
+        cli.envContext = true;
+
+        cli.run();
+        assertEquals("Hello, environment!\n", getCapturedOut());
+    }    
 
     @After
     public void tearDown() {
