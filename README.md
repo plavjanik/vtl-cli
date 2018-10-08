@@ -28,10 +28,42 @@ Then the standard output of `vtl-cli` is:
 ## Syntax
 
 ```
-Apache Velocity Template Language CLI
-Usage: vtl [-o=<outputFile>] [-c=<String=String>]... FILE
+vtl [-o=<outputFile>] [-yc=YAML file with context] [-c=variable=value]... FILE
+
+Parameters:
       FILE                 File with a Velocity template to process
-  -c, --context=<String=String>
+
+Options:
+  -c, --context=variable=value
                            Context variable for Velocity (can be repeated)
+  -yc, --yaml-context=<yamlContextFile>
+                           YAML file with context variables
   -o, --out=<outputFile>   Output file (default: print to console)
 ```
+
+## Loading context from YAML file
+
+You can write context variables into a YAML file - for example:
+
+```yaml
+name: world
+```
+
+and the use it:
+
+```
+vtl --yaml-context templates/hello.yml templates/hello.vtl
+```
+
+If you have nested YAML properties like:
+
+```yaml
+nested:
+    name: world
+```
+
+you can references it as `${nested.name}`.
+
+## VTL
+
+The template language is described in[ Velocity User Guide](http://velocity.apache.org/engine/2.0/user-guide.html).

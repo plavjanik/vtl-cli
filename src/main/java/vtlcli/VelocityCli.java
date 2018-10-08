@@ -17,11 +17,15 @@ import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Map;
@@ -32,21 +36,36 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "vtl", header = "%n@|green Apache Velocity Template Language CLI|@")
+@Command(name = "vtl", 
+         header = "%n@|green Apache Velocity Template Language CLI|@",
+         sortOptions = false,
+         headerHeading = "Usage:%n%n",
+         synopsisHeading = "%n",         
+         parameterListHeading = "%nParameters:%n",
+         optionListHeading = "%nOptions:%n")
 public class VelocityCli implements Runnable {
-    Logger logger = LoggerFactory.getLogger(VelocityCli.class);
+    private static Logger logger = LoggerFactory.getLogger(VelocityCli.class);
 
     @Parameters(paramLabel = "FILE", description = "File with a Velocity template to process")
     File inputTemplate;
 
-    @Option(names = { "-c", "--context" }, description = "Context variable for Velocity (can be repeated)")
+    @Option(names = { "-c", "--context" }, description = "Context variable for Velocity (can be repeated)", paramLabel="variable=value")
     Map<String, String> context;
+
+    @Option(names = { "-yc", "--yaml-context" }, description = "YAML file with context variables")
+    File yamlContextFile;
 
     @Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
     File outputFile;
 
     public static void main(String[] args) {
-        CommandLine.run(new VelocityCli(), args);
+        System.setProperty("picocli.usage.width", "120");
+        try {
+            CommandLine.run(new VelocityCli(), args);
+        } catch (VelocityCliError e) {
+            logger.error("{}: {}", e.getMessage(), e.getCause().getMessage());
+            System.exit(1);
+        }
     }
 
     @Override
@@ -58,24 +77,43 @@ public class VelocityCli implements Runnable {
         engine.init();
 
         VelocityContext velocityContext = new VelocityContext();
+        loadOptionContext(velocityContext);
+        loadYamlContext(velocityContext);
+
+        Writer writer = getWriter();
+        try {
+            Template template = engine.getTemplate(inputTemplate.getName());
+            template.merge(velocityContext, writer);
+            writer.flush();
+        } catch (ResourceNotFoundException e) {
+            throw new VelocityCliError("Error loading template", e);
+        } catch (ParseErrorException e) {
+            throw new VelocityCliError("Error parsing template", e);
+        } catch (IOException e) {
+            throw new VelocityCliError("I/O error", e);
+        }
+    }
+
+    private void loadOptionContext(VelocityContext velocityContext) {
         if (context != null) {
             for (Entry<String, String> entry : context.entrySet()) {
                 velocityContext.put(entry.getKey(), entry.getValue());
             }
         }
+    }
 
-        Writer writer = getWriter();
-        if (writer != null) {
+    @SuppressWarnings("unchecked")
+    private void loadYamlContext(VelocityContext velocityContext) {
+        if (yamlContextFile != null) {
             try {
-                Template template = engine.getTemplate(inputTemplate.getName());
-                template.merge(velocityContext, writer);
-                writer.flush();
-            } catch (ResourceNotFoundException e) {
-                logger.error("Error loading template: {}", e.getMessage());
-            } catch (ParseErrorException e) {
-                logger.error("Error parsing template: {}", e.getMessage());
-            } catch (IOException e) {
-                logger.error("I/O error: {}", e.getMessage());
+                InputStream input = new FileInputStream(yamlContextFile);
+                Yaml yaml = new Yaml();
+                Map<String, Object> context = (Map<String, Object>) yaml.load(input);
+                for (Entry<String, Object> entry : context.entrySet()) {
+                    velocityContext.put(entry.getKey(), entry.getValue());
+                }
+            } catch (FileNotFoundException e) {
+                throw new VelocityCliError("Error reading YAML context file", e);
             }
         }
     }
@@ -85,11 +123,9 @@ public class VelocityCli implements Runnable {
             try {
                 return new BufferedWriter(new FileWriter(outputFile));
             } catch (IOException e) {
-                logger.error("Error opening output file: {}'", e.getMessage());
-                return null;
+                throw new VelocityCliError("Error opening output file", e);
             }
-        }
-        else {
+        } else {
             return new BufferedWriter(new OutputStreamWriter(System.out));
         }
     }
