@@ -110,7 +110,6 @@ public class VelocityCliTest {
         VelocityCli cli = new VelocityCli();
         cli.inputTemplate = file("templates/hello.vtl");
         cli.yamlContextFile = file("templates/hello.yml");
-
         cli.run();
         assertEquals("Hello, world!\n", getCapturedOut());
     }
@@ -122,6 +121,34 @@ public class VelocityCliTest {
         cli.yamlContextFile = file("templates/missing.yml");
 
         cli.run();
+    }
+
+    @Test(expected = VelocityCliError.class)
+    public void testInvalidInputEncoding() {
+        VelocityCli cli = new VelocityCli();
+        cli.inputTemplate = file("templates/hello.vtl");
+        cli.inputEncoding = "invalid";
+        cli.run();
+    }
+
+    @Test(expected = VelocityCliError.class)
+    public void testInvalidOutputEncoding() {
+        VelocityCli cli = new VelocityCli();
+        cli.inputTemplate = file("templates/hello.vtl");
+        cli.outputEncoding = "invalid";
+        cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
+        cli.run();
+    }
+
+    public void testEncoding() throws IOException {
+        VelocityCli cli = new VelocityCli();
+        cli.inputTemplate = file("templates/hello.vtl");
+        cli.inputEncoding = "Cp1047";
+        cli.outputEncoding = "ISO-8859-1";
+        cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
+        cli.context = Collections.singletonMap("name", "world");
+        cli.run();
+        assertEquals("Hello, world!\n", new String(Files.readAllBytes(cli.outputFile.toPath())));
     }
 
     @Test
