@@ -11,10 +11,32 @@ This is simple Java command-line application that uses Apache Velocity to 'merge
 ./gradlew build
 ```
 
+## Installation
+
+1. Download https://github.com/plavjanik/vtl-cli/releases/download/v0.1.0/vtl.zip:
+
+        curl -LO https://github.com/plavjanik/vtl-cli/releases/download/v0.1.0/vtl.zip
+
+2. Extract it:
+
+        unzip vtl.zip
+
+3. Now you have several files available:
+    
+    - `vtl-cli.jar` for execution by the `java -jar vtl-cli.jar` command
+    - `vtl` for execution by the `vtl` command on Linux systems with `java` in `PATH` or `JAVA_HOME` set
+    - `zos/vtl` for execution by the `vtl` command on z/OS systems
+
 ## Usage
 
 ```
 java -jar build/vtl-cli.jar templates/hello.vtl -c name=world
+```
+
+or 
+
+```
+vtl templates/hello.vtl -c name=world
 ```
 
 If the `hello.vtl` file contains:
@@ -75,3 +97,11 @@ you can references it as `${nested.name}`.
 ## VTL
 
 The template language is described in[ Velocity User Guide](http://velocity.apache.org/engine/2.0/user-guide.html).
+
+## Releasing
+
+The new releases are done by Travis CI after new tag is created:
+
+    git tag v0.1.0
+    git push --tags
+
