@@ -10,8 +10,7 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 deploy:
   provider: releases
-  api_key:
-    secure: uyB28MX5T69CeygGgT9gcwMtW+ghdA/TJSTsoFuxJXMEiq+FkJ60R/VAWE6hfebVAQ+4IDtkD6f7HFm8e4VvJyd2gOzTzy5vCw2Es57HudcK4uPDH9FIoav/rXzPFNXmSMCL8chv2W+ckYJOShE3TnGLU1lodkAjDxLc5gFhgz53OEoDjZvvRtPFcVuv6dwDVtUqf2oOMreaO5xCaoeUVpPwKBNNczxjkC7PDuT3+jcbxrcwEX3zx2oyTioHAzn/amWAzuOVoC95CxAqwkY9vH2w1XKMN0RpKhcL52OhmMehnjHhLXVGOPMVcJemCFNJ7SU+AprdPAI212fxcw2BWZkczJKCLow+dvewDBH7EmwDO8b7QW8lAY5TPRxWzMfpaF/g8YXJem2SSWmJPWO1AlYhnrCj2CwHFeJdmGstkT+ZsPxg+lnuFfPkQy8e2pyTHopwXMf/MPDgsVflTHUY8pHc/3ApYSPnxBsO62DF7LlPEoAW4M4ldnDBQB78andtb0L31h/KKnVbRXJ4LeTAUzMAVfa674DvTi4DPCm7GZGHSMMaRAGFCA6VgX6jP5jC1VI+qk/5JTi3Z/RKGLm508Gwmz7si4ywWyhU7el70u/K3c5raLIS6eqe1yoOs59CH0sIY1pEjyCCrYkEmWBEmZUsq2pnmtE0fSPfVtqLE0I=
+  api_key: "$GITHUB_OAUTH_TOKEN"
   file: build/vtl.zip
   on:
     tags: true
