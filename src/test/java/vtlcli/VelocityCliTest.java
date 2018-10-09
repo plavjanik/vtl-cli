@@ -132,6 +132,15 @@ public class VelocityCliTest {
     }
 
     @Test(expected = VelocityCliError.class)
+    public void testInvalidYamlEncoding() {
+        VelocityCli cli = new VelocityCli();
+        cli.inputTemplate = file("templates/hello.vtl");
+        cli.yamlContextFile = file("templates/hello.yml");
+        cli.yamlEncoding = "invalid";
+        cli.run();
+    }    
+
+    @Test(expected = VelocityCliError.class)
     public void testInvalidOutputEncoding() {
         VelocityCli cli = new VelocityCli();
         cli.inputTemplate = file("templates/hello.vtl");
