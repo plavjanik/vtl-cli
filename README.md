@@ -2,8 +2,20 @@
 
 [![Build Status](https://travis-ci.com/plavjanik/vtl-cli.svg?branch=master)](https://travis-ci.com/plavjanik/vtl-cli)
 [![codecov](https://codecov.io/gh/plavjanik/vtl-cli/branch/master/graph/badge.svg)](https://codecov.io/gh/plavjanik/vtl-cli)
+[![DepShield Badge](https://depshield.sonatype.org/badges/plavjanik/vtl-cli/depshield.svg)](https://depshield.github.io)
+[![CodeFactor](https://www.codefactor.io/repository/github/plavjanik/vtl-cli/badge)](https://www.codefactor.io/repository/github/plavjanik/vtl-cli)
 
-This is simple Java command-line application that uses Apache Velocity to 'merge' VTL templates from console.
+This is simple Java command-line application that uses Apache Velocity to 'merge' VTL templates from shell scripts. 
+
+Features:
+- Velocity 2.0 templating engine
+- Output to console or to a file
+- Context variables can be provided in:
+  - Command line arguments
+  - Environment variables
+  - YAML file
+- Configurable encoding for input and output
+- One small fully executable JAR file
 
 ## Build
 
