@@ -3,7 +3,6 @@ import logging
 import os
 
 from ptg2 import zos
-from ptg2.context import set_system
 from ptg2.zos import write_file
 from ptg2.zos.unix import get_unix
 
@@ -23,13 +22,14 @@ def upload_to_zos(local_path, zos_path):
 
 
 def main():
-    set_system("ca31")
-    deploy_dir = "/a/plape03/vtl-cli"
+    deploy_dir = "/tmp/vtl-cli"
     if not zos.exists(deploy_dir):
         zos.makedirs(deploy_dir)
-    upload_to_zos("build/libs/vtl-cli.jar", zos.unix_join(deploy_dir, "vtl-cli.jar"))
+    upload_to_zos("build/vtl-cli.jar", zos.unix_join(deploy_dir, "vtl-cli.jar"))
+    upload_to_zos("build/zos/vtl", zos.unix_join(deploy_dir, "vtl"))
     with get_unix() as unix:
         unix.do(f'cd {deploy_dir}')
+        unix.do('chmod a+x vtl')
         unix.do(f'echo "Hello, \$name!" > hello.vtl')
         unix.do(f'echo "name: world" > hello.yml')
         print(unix.do(f'java -jar vtl-cli.jar -y hello.yml -o hello.txt -ie Cp1047 -oe Cp1047 hello.vtl'))
