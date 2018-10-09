@@ -1,11 +1,18 @@
 language: java
 install: true
-
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 script:
-  - ./gradlew build
-
+- "./gradlew build"
+- scripts/create_executable_jars.sh
+- cd build; zip vtl.zip vtl-cli.jar vtl zos/vtl; cd ..
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+- bash <(curl -s https://codecov.io/bash)
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: RmrvnaVNKiaN7TgeKhylFYagmWMwSDgNNL4LROo60KBotluj7AHGOizk87HNgwaJaa4a2GkF9p/sjJCnvRDU7gke6wkrS/82ADswlaOt5kzvQHvK17yVA3ZKSY60ZtUulrHydZNoukcoZu9NpXFx9BKG475SGXG0OxQw258DYppjPM/aPAJTcfsmae3dcu8nxL2cqAjDlSFVmqHV0fcaS/YWGzr3TN8mGKL0ebc5pYqq0CIpDM1XYPoNDdOwHanOUuYrg0xi50Dc6VeId+wyapeWYrgix2iQuMZGRDpjtK1FPqTukUoUSWMfrh2RHuHzGiiAZxXIyZxg3fukH+DBktaZ81e7N6lbeWwM3dfM2X0H1TYYCYRbRYXqa99ow11FCru5W0qqcRo4o62su3gQq5xwdd/ZvzXxN9D4T8eWOLZHy3VJnKupvnI2uwT7H36lQ6ed0F5hPKbWfvJp7aH8sDhL27Pj0n1QfsfEPCE2zGaoqDuYHFtDdHDXxtwp4wJ3Sh7Mriy6gxIgRy9/LwkdMqEl72jaoYOVoOfn2Sr653xUnEygrmjCTsueVrpSqFspLbA2BVIMQJfx4oV5rUFS/Cj5OF0UYFqRt721lMJT4Onx3+/O3wVnRxFXPtrhqHhzb90tPHkyRT88nxLkc5lPTI14Mquk1WGW2Y51gjTvQJY=
+  file: build/vtl.zip
+  on:
+    repo: plavjanik/vtl-cli
