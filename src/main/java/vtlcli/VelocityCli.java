@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -39,14 +40,15 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "vtl", header = "%n@|green Apache Velocity Template Language CLI|@", sortOptions = false, headerHeading = "Usage:%n%n", synopsisHeading = "%n", parameterListHeading = "%nParameters:%n", optionListHeading = "%nOptions:%n")
+@Command(name = "vtl", header = "@|green Apache Velocity Template Language CLI|@", sortOptions = false, headerHeading = "Usage:%n%n", synopsisHeading = "%n", parameterListHeading = "%nParameters:%n", optionListHeading = "%nOptions:%n")
 public class VelocityCli implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(VelocityCli.class);
 
     @Parameters(paramLabel = "FILE", description = "File with a Velocity template to process")
     File inputTemplate;
 
-    @Option(names = { "-i", "--input-encoding" }, description = "UTF8, ISO8859-1, Cp1047, ... - see https://goo.gl/yn2pJZ")
+    @Option(names = { "-ie",
+            "--input-encoding" }, description = "UTF8, ISO8859-1, Cp1047, ... - see https://goo.gl/yn2pJZ")
     String inputEncoding;
 
     @Option(names = { "-c",
@@ -56,13 +58,16 @@ public class VelocityCli implements Runnable {
     @Option(names = { "-y", "--yaml-context" }, description = "YAML file with context variables")
     File yamlContextFile;
 
+    @Option(names = { "-ye", "--yaml-encoding" }, description = "UTF8, ISO8859-1, Cp1047, ...")
+    String yamlEncoding;
+
     @Option(names = { "-e", "--env-context" }, description = "Set the context variables from environment")
     boolean envContext;
 
     @Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
     File outputFile;
 
-    @Option(names = { "-n", "--output-encoding" }, description = "UTF8, ISO8859-1, Cp1047, ...")
+    @Option(names = { "-oe", "--output-encoding" }, description = "UTF8, ISO8859-1, Cp1047, ...")
     String outputEncoding;
 
     public static void main(String[] args) {
@@ -126,13 +131,20 @@ public class VelocityCli implements Runnable {
     @SuppressWarnings("unchecked")
     private void loadYamlContext(VelocityContext velocityContext) {
         if (yamlContextFile != null) {
+            if (yamlEncoding == null) {
+                yamlEncoding = inputEncoding;
+            }
             try {
                 InputStream input = new FileInputStream(yamlContextFile);
+                InputStreamReader reader = (yamlEncoding == null) ? new InputStreamReader(input)
+                        : new InputStreamReader(input, yamlEncoding);
                 Yaml yaml = new Yaml();
-                Map<String, Object> context = (Map<String, Object>) yaml.load(input);
+                Map<String, Object> context = (Map<String, Object>) yaml.load(reader);
                 for (Entry<String, Object> entry : context.entrySet()) {
                     velocityContext.put(entry.getKey(), entry.getValue());
                 }
+            } catch (UnsupportedEncodingException e) {
+                throw new VelocityCliError("Unsupported encoding", e);
             } catch (FileNotFoundException e) {
                 throw new VelocityCliError("Error reading YAML context file", e);
             }
