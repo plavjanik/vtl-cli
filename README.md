@@ -1,21 +1,21 @@
-# Velocity Template Language (VTL) Command-line Interface
+# Velocity Template Language (VTL) Command-Line Interface
 
 [![Build Status](https://travis-ci.com/plavjanik/vtl-cli.svg?branch=master)](https://travis-ci.com/plavjanik/vtl-cli)
 [![codecov](https://codecov.io/gh/plavjanik/vtl-cli/branch/master/graph/badge.svg)](https://codecov.io/gh/plavjanik/vtl-cli)
-[![DepShield Badge](https://depshield.sonatype.org/badges/plavjanik/vtl-cli/depshield.svg)](https://depshield.github.io)
 [![CodeFactor](https://www.codefactor.io/repository/github/plavjanik/vtl-cli/badge)](https://www.codefactor.io/repository/github/plavjanik/vtl-cli)
 
 This is simple Java command-line application that uses Apache Velocity to 'merge' VTL templates from shell scripts. 
 
 Features:
-- Velocity 2.0 templating engine
-- Output to console or to a file
+- Apache Velocity 2.0 template engine
+- Output to the console or to a file
 - Context variables can be provided in:
-  - Command line arguments
+  - Command line parameters
   - Environment variables
   - YAML file
 - Configurable encoding for input and output
-- One small fully executable JAR file
+- One small fully executable JAR file (no `java -jar...` on Linux and z/OS)
+- Works everywhere where is Java 
 
 ## Build
 
@@ -33,7 +33,7 @@ Features:
 
         unzip vtl.zip
 
-3. Now you have several files available:
+3. There are several files available:
     
     - `vtl-cli.jar` for execution by the `java -jar vtl-cli.jar` command
     - `vtl` for execution by the `vtl` command on Linux systems with `java` in `PATH` or `JAVA_HOME` set
