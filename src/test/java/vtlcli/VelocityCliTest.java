@@ -67,7 +67,7 @@ public class VelocityCliTest {
         VelocityCli cli = new VelocityCli();
         cli.inputTemplate = file("templates/hello.vtl");
         cli.run();
-        assertEquals("Hello, ${name}!\n", getCapturedOut());
+        assertEquals(String.format("Hello, ${name}!%n"), getCapturedOut());
     }
 
     @Test(expected = VelocityCliError.class)
@@ -84,7 +84,7 @@ public class VelocityCliTest {
         cli.inputTemplate = file("templates/hello.vtl");
         cli.context = Collections.singletonMap("name", "world");
         cli.run();
-        assertEquals("Hello, world!\n", getCapturedOut());
+        assertEquals(String.format("Hello, world!%n"), getCapturedOut());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class VelocityCliTest {
         cli.context = Collections.singletonMap("name", "world");
         cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
         cli.run();
-        assertEquals("Hello, world!\n", new String(Files.readAllBytes(cli.outputFile.toPath())));
+        assertEquals(String.format("Hello, world!%n"), new String(Files.readAllBytes(cli.outputFile.toPath())));
     }
 
     @Test(expected = VelocityCliError.class)
@@ -111,7 +111,7 @@ public class VelocityCliTest {
         cli.inputTemplate = file("templates/hello.vtl");
         cli.yamlContextFile = file("templates/hello.yml");
         cli.run();
-        assertEquals("Hello, world!\n", getCapturedOut());
+        assertEquals(String.format("Hello, world!%n"), getCapturedOut());
     }
 
     @Test(expected = VelocityCliError.class)
@@ -157,7 +157,7 @@ public class VelocityCliTest {
         cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
         cli.context = Collections.singletonMap("name", "world");
         cli.run();
-        assertEquals("Hello, world!\n", new String(Files.readAllBytes(cli.outputFile.toPath())));
+        assertEquals(String.format("Hello, world!%n"), new String(Files.readAllBytes(cli.outputFile.toPath())));
     }
 
     @Test
@@ -171,7 +171,7 @@ public class VelocityCliTest {
         cli.envContext = true;
 
         cli.run();
-        assertEquals("Hello, environment!\n", getCapturedOut());
+        assertEquals(String.format("Hello, environment!%n"), getCapturedOut());
     }    
 
     @After
