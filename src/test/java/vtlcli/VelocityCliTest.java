@@ -67,7 +67,7 @@ public class VelocityCliTest {
         VelocityCli cli = new VelocityCli();
         cli.inputTemplate = file("templates/hello.vtl");
         cli.run();
-        assertEquals("Hello, ${name}!\n", getCapturedOut());
+        assertEquals(String.format("Hello, ${name}!%n"), getCapturedOut());
     }
 
     @Test(expected = VelocityCliError.class)
@@ -84,7 +84,7 @@ public class VelocityCliTest {
         cli.inputTemplate = file("templates/hello.vtl");
         cli.context = Collections.singletonMap("name", "world");
         cli.run();
-        assertEquals("Hello, world!\n", getCapturedOut());
+        assertEquals(String.format("Hello, world!%n"), getCapturedOut());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class VelocityCliTest {
         cli.context = Collections.singletonMap("name", "world");
         cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
         cli.run();
-        assertEquals("Hello, world!\n", new String(Files.readAllBytes(cli.outputFile.toPath())));
+        assertEquals(String.format("Hello, world!%n"), new String(Files.readAllBytes(cli.outputFile.toPath())));
     }
 
     @Test(expected = VelocityCliError.class)
@@ -111,7 +111,7 @@ public class VelocityCliTest {
         cli.inputTemplate = file("templates/hello.vtl");
         cli.yamlContextFile = file("templates/hello.yml");
         cli.run();
-        assertEquals("Hello, world!\n", getCapturedOut());
+        assertEquals(String.format("Hello, world!%n"), getCapturedOut());
     }
 
     @Test(expected = VelocityCliError.class)
@@ -157,22 +157,26 @@ public class VelocityCliTest {
         cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
         cli.context = Collections.singletonMap("name", "world");
         cli.run();
-        assertEquals("Hello, world!\n", new String(Files.readAllBytes(cli.outputFile.toPath())));
+        assertEquals(String.format("Hello, world!%n"), new String(Files.readAllBytes(cli.outputFile.toPath())));
     }
 
     @Test
-    public void testEnvironmentContext() throws Exception {
+    public void testZosmfVariablesWithDash() throws Exception {
         VelocityCli cli = new VelocityCli();
-        Map<String, String> env = System.getenv();
-        Map<String, String> newEnv = new HashMap<>(env);
-        newEnv.put("VTL_NAME", "environment");
-        EnvUtils.setenv(newEnv);
-        cli.inputTemplate = file("templates/env.vtl");
-        cli.envContext = true;
+        cli.inputTemplate = file("templates/zOSMFvariables.vtl");
+        Map<String, String> m = new HashMap<String, String>();
+
+        m.put("DBname", "noscope");
+        m.put("instance-DBname", "instance-scope");
+        m.put("global-DBname", "global-scope");
+        cli.context = m;
 
         cli.run();
-        assertEquals("Hello, environment!\n", getCapturedOut());
-    }    
+		assertEquals(String.format("Variable without scope 'noscope'%n"
+				+ "Variable in instance scope 'instance-scope'%n" 
+				+ "Variable in global scope 'global-scope'"),
+				getCapturedOut());
+    }      
 
     @After
     public void tearDown() {
