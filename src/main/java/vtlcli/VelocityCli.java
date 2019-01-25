@@ -95,10 +95,13 @@ public class VelocityCli implements Runnable {
 
         try {
             Writer writer = getWriter();
+            Template template;
             if (inputEncoding != null) {
                 Charset.forName(inputEncoding);
+                template = engine.getTemplate(inputTemplate.getName(), inputEncoding);
+            } else {
+            	template = engine.getTemplate(inputTemplate.getName());
             }
-            Template template = engine.getTemplate(inputTemplate.getName(), inputEncoding);
             template.merge(velocityContext, writer);
             writer.flush();
         } catch (ResourceNotFoundException e) {
