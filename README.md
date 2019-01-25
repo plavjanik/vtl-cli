@@ -7,7 +7,7 @@
 This is simple Java command-line application that uses Apache Velocity to 'merge' VTL templates from shell scripts. 
 
 Features:
-- Apache Velocity 2.0 template engine
+- Apache Velocity 1.7 template engine
 - Output to the console or to a file
 - Context variables can be provided in:
   - Command line parameters
