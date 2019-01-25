@@ -172,11 +172,12 @@ public class VelocityCliTest {
         cli.context = m;
 
         cli.run();
-		assertEquals(String.format("Variable without scope 'noscope'%n"
-				+ "Variable in instance scope 'instance-scope'%n" 
-				+ "Variable in global scope 'global-scope'"),
-				getCapturedOut());
+        assertEquals(String.format("Variable without scope 'noscope'%n"
+            + "Variable in instance scope 'instance-scope'%n" 
+            + "Variable in global scope 'global-scope'"),
+            getCapturedOut());
     }      
+
 
     @After
     public void tearDown() {
