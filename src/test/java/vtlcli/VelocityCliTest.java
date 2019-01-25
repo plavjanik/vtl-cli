@@ -149,17 +149,58 @@ public class VelocityCliTest {
         cli.run();
     }
 
-    public void testEncoding() throws IOException {
+    @Test
+    public void testEncoding_all_in_ebcdic() throws IOException {
         VelocityCli cli = new VelocityCli();
-        cli.inputTemplate = file("templates/hello.vtl");
+        cli.inputTemplate = file("templates/cp1047.vtl");
+        cli.yamlContextFile = file("templates/hello_cp1047.yml");
         cli.inputEncoding = "Cp1047";
+        cli.yamlEncoding = "Cp1047";
         cli.outputEncoding = "ISO-8859-1";
         cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
-        cli.context = Collections.singletonMap("name", "world");
         cli.run();
-        assertEquals(String.format("Hello, world!%n"), new String(Files.readAllBytes(cli.outputFile.toPath())));
+        assertEquals(String.format("Hello Petr!"), new String(Files.readAllBytes(cli.outputFile.toPath())));
     }
 
+    @Test
+    public void testEncoding_all_in_ebcdic_yml_encoding_not_specified() throws IOException {
+        VelocityCli cli = new VelocityCli();
+        cli.inputTemplate = file("templates/cp1047.vtl");
+        cli.yamlContextFile = file("templates/hello_cp1047.yml");
+        cli.inputEncoding = "Cp1047";
+        //cli.yamlEncoding = "Cp1047";  intentionally not specified it should be same like cli.inputEncoding
+        cli.outputEncoding = "ISO-8859-1";
+        cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
+        cli.run();
+        assertEquals(String.format("Hello Petr!"), new String(Files.readAllBytes(cli.outputFile.toPath())));
+    }
+
+    @Test
+    public void testEncoding_template_in_ebcdic_yaml_in_ascii() throws IOException {
+        VelocityCli cli = new VelocityCli();
+        cli.inputTemplate = file("templates/cp1047.vtl");
+        cli.yamlContextFile = file("templates/hello.yml");
+        cli.inputEncoding = "Cp1047";
+        cli.yamlEncoding = "ISO-8859-1";
+        cli.outputEncoding = "ISO-8859-1";
+        cli.outputFile = new File(folder.getRoot().getAbsolutePath(), "test.out");
+        cli.run();
+        assertEquals(String.format("Hello Petr!"), new String(Files.readAllBytes(cli.outputFile.toPath())));
+    }
+
+    @Test
+    public void testEnvironmentContext() throws Exception {
+    	VelocityCli cli = new VelocityCli();
+        Map<String, String> env = System.getenv();
+        Map<String, String> newEnv = new HashMap<>(env);
+        newEnv.put("VTL_NAME", "environment");
+        EnvUtils.setenv(newEnv);
+        cli.inputTemplate = file("templates/env.vtl");
+        cli.envContext = true;
+        cli.run();
+        assertEquals(String.format("Hello, environment!%n"), getCapturedOut());        
+    }
+    
     @Test
     public void testZosmfVariablesWithDash() throws Exception {
         VelocityCli cli = new VelocityCli();
