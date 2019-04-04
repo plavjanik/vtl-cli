@@ -25,9 +25,9 @@ Features:
 
 ## Installation
 
-1. Download https://github.com/plavjanik/vtl-cli/releases/download/v0.1.0/vtl.zip:
+1. Download https://github.com/plavjanik/vtl-cli/releases/download/v0.1.1/vtl.zip:
 
-        curl -LO https://github.com/plavjanik/vtl-cli/releases/download/v0.1.0/vtl.zip
+        curl -LO https://github.com/plavjanik/vtl-cli/releases/download/v0.1.1/vtl.zip
 
 2. Extract it:
 
@@ -108,7 +108,7 @@ you can references it as `${nested.name}`.
 
 ## VTL
 
-The template language is described in[ Velocity User Guide](http://velocity.apache.org/engine/2.0/user-guide.html).
+The template language is described in [Velocity User Guide](http://velocity.apache.org/engine/1.7/user-guide.html).
 
 ## Releasing
 
