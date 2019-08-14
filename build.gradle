@@ -16,7 +16,7 @@ dependencies {
     compile 'info.picocli:picocli:3.6.1'
     compile 'org.slf4j:slf4j-api:1.7.26'
     compile 'org.slf4j:slf4j-simple:1.7.26'
-    compile 'org.yaml:snakeyaml:1.24'
+    compile 'org.yaml:snakeyaml:1.25'
 
     testCompile 'junit:junit:4.12'
 }
