@@ -18,7 +18,7 @@ dependencies {
     compile 'org.slf4j:slf4j-simple:1.7.26'
     compile 'org.yaml:snakeyaml:1.24'
 
-    testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.13.1'
 }
 
 jacocoTestReport {
